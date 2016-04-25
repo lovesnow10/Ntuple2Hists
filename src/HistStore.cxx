@@ -11,8 +11,8 @@ void HistStore::AddHist(string hname, float nBins, float xlow, float xup) {
   hist->Sumw2();
   hist->SetDirectory(mDir);
   mHistMap.insert(make_pair(hname, hist));
-  printf("HistStore:: AddHist:: Successfully Add Histogram: %s\n",
-         hname.c_str());
+//  printf("HistStore:: AddHist:: Successfully Add Histogram: %s\n",
+//         hname.c_str());
 }
 
 TH1F *HistStore::GetHist(string hname) {

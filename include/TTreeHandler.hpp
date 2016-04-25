@@ -86,6 +86,12 @@ public:
   };
   const TChain *GetChain() const { return mTree; };
   void ResetCounter() { mCounter = 0; };
+  string GetValueType(string value) {
+    if (VarTypeMap.find(value) != VarTypeMap.end())
+      return VarTypeMap.at(value);
+    else
+      return "";
+  };
 
 private:
   TTreeHandler(TTreeHandler &T);

@@ -1,4 +1,4 @@
-PROGNAME      = HtbDilBDT
+PROGNAME      = Ntuple2Hists
 SRCDIR = src
 INCDIR = include
 SOURCEFILES   = $(wildcard $(SRCDIR)/*.cxx)

@@ -50,8 +50,11 @@ bool HistsGen::finalize() {
 bool HistsGen::MakeHists() {
   long nTotalEntries = mWorker->GetEntries();
   long messageSlice = long(nTotalEntries / 15);
+  if (messageSlice == 0)
+    messageSlice = 1;
   // Calculate normalization (same for all events)
   mWorker->GetEntry(0);
+  int runNumber = mWorker->GetValue<int>("runNumber");
   int mcChannel = mWorker->GetValue<int>("mcChannelNumber");
   float norm = 1.0;
   float general_weight = ds->GetWeight(mcChannel);
@@ -61,7 +64,7 @@ bool HistsGen::MakeHists() {
     float totalEvents = mHelpWorker->GetSumUp<float>("totalEventsWeighted");
     string SampleType = ds->GetSampleType(mcChannel);
     float filter_eff = 1.0;
-    if (SampleType == "Hplus")
+    if (mcChannel >= 341541 && mcChannel <= 341558)
       filter_eff = 0.5;
     float xs = xshelper->GetXS(to_string(mcChannel));
     float lumi = atof((config->GetCommonSetting("Luminosity")).c_str());
@@ -82,8 +85,9 @@ bool HistsGen::MakeHists() {
     long nProcessed = mWorker->GetCurrentEntry() + 1;
 
     if (nProcessed % messageSlice == 0) {
-      printf("HistsGen:: MakeHists:: ------Now Processed %ld of %ld-----\n",
-             nProcessed, nTotalEntries);
+      printf(
+          "HistsGen:: MakeHists:: ------Now Processed %ld of %ld in %i-----\n",
+          nProcessed, nTotalEntries, mcChannel!=0?mcChannel:runNumber);
     }
     // Calculate weights (those are applied event by event)
     float weights = 1.0;
@@ -193,7 +197,6 @@ bool HistsGen::MakeHists() {
       if (mcChannel == 410009 && TopHeavyFlavorFilterFlag == 5)
         continue;
     }
-
     // Fill Hists!
     int nJets = mWorker->GetValue<int>("nJets");
     int nBTags = mWorker->GetValue<int>("nBTags");
@@ -348,12 +351,17 @@ bool HistsGen::MakeHists() {
         value = phi_lep1;
       else if (var == "phi_lep2")
         value = phi_lep2;
-      else
-        value = mWorker->GetValue<float>(var);
+      else {
+        string valueType = mWorker->GetValueType(var);
+        if (valueType == "int" || valueType == "Int_t") {
+          value = mWorker->GetValue<int>(var);
+        } else {
+          value = mWorker->GetValue<float>(var);
+        }
+      }
       string hname = hs->GenName(var, region, sample);
       hs->GetHist(hname)->Fill(value, weights * norm);
     }
-
   }
   return true;
 }

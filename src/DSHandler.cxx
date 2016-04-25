@@ -7,11 +7,9 @@
 
 using namespace std;
 
-DSHandler::DSHandler(string InputTxt)
-{
+DSHandler::DSHandler(string InputTxt) {
   ifstream in(InputTxt.c_str());
-  if(!in)
-  {
+  if (!in) {
     printf("DSHandler:: Cannot Open File %s\n", InputTxt.c_str());
     exit(-1);
   }
@@ -19,31 +17,26 @@ DSHandler::DSHandler(string InputTxt)
   while (getline(in, line)) {
     mPathsVec.push_back(line);
     string ID = this->GetSampleID(line);
-    if (ID != "")
-    {
+    if (ID != "") {
       string tmpType;
-      if (ID.length() == 8)
-      {
+      if (ID.length() == 8) {
         tmpType = "DATA";
-      }
-      else
-      {
+      } else {
         tmpType = this->GetSampleType(atoi(ID.c_str()));
       }
-      if (find(mSampleTypesVec.begin(), mSampleTypesVec.end(), tmpType) == mSampleTypesVec.end())
-      {
+      if (find(mSampleTypesVec.begin(), mSampleTypesVec.end(), tmpType) ==
+          mSampleTypesVec.end()) {
         mSampleTypesVec.push_back(tmpType);
       }
     }
   }
-  cout<<mSampleTypesVec.size()<<endl;
   this->Initialize();
 }
 
 void DSHandler::AddPath(string path) {
   mPathsVec.push_back(path);
-//  std::vector<string> tempVec = this->GrabRootFiles(path);
-//  mFilesMap.insert(make_pair(mTotalDS++, tempVec));
+  //  std::vector<string> tempVec = this->GrabRootFiles(path);
+  //  mFilesMap.insert(make_pair(mTotalDS++, tempVec));
 }
 
 const std::vector<string> &DSHandler::GetFiles(int nDS) const {
@@ -74,11 +67,62 @@ string DSHandler::GetSampleType(int DSID) {
   if (DSID == 410000 || DSID == 410009 || DSID == 410120 || DSID == 410121) {
     return "ttbar";
   }
-  if (DSID >= 341365 && DSID <= 343367) {
+  if (DSID >= 343365 && DSID <= 343367) {
     return "ttH";
   }
-  if (DSID >= 341541 && DSID <= 341558) {
-    return "Hplus";
+  if (DSID == 341541) {
+    return "Hplus200";
+  }
+  if (DSID == 341542) {
+    return "Hplus225";
+  }
+  if (DSID == 341543) {
+    return "Hplus250";
+  }
+  if (DSID == 341544) {
+    return "Hplus275";
+  }
+  if (DSID == 341545) {
+    return "Hplus300";
+  }
+  if (DSID == 341546) {
+    return "Hplus350";
+  }
+  if (DSID == 341547) {
+    return "Hplus400";
+  }
+  if (DSID == 341548) {
+    return "Hplus500";
+  }
+  if (DSID == 341549) {
+    return "Hplus600";
+  }
+  if (DSID == 341550) {
+    return "Hplus700";
+  }
+  if (DSID == 341551) {
+    return "Hplus800";
+  }
+  if (DSID == 341552) {
+    return "Hplus900";
+  }
+  if (DSID == 341553) {
+    return "Hplus1000";
+  }
+  if (DSID == 341554) {
+    return "Hplus1200";
+  }
+  if (DSID == 341555) {
+    return "Hplus1400";
+  }
+  if (DSID == 341556) {
+    return "Hplus1600";
+  }
+  if (DSID == 341557) {
+    return "Hplus1800";
+  }
+  if (DSID == 341558) {
+    return "Hplus2000";
   }
   if (DSID == 410050 || (DSID >= 410066 && DSID <= 410116)) {
     return "Others";
@@ -168,17 +212,13 @@ const std::vector<string> &DSHandler::Next() {
     return tmpNone;
 }
 
-string DSHandler::GetSampleID(string path)
-{
+string DSHandler::GetSampleID(string path) {
   const regex pattern(".*\\.(\\d+)\\..*");
   std::match_results<std::string::const_iterator> result;
   bool valid = std::regex_match(path, result, pattern);
-  if (!valid)
-  {
+  if (!valid) {
     return "";
-  }
-  else
-  {
+  } else {
     return result[1];
   }
 }
