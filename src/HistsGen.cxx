@@ -23,8 +23,8 @@ bool HistsGen::initialize() {
   ds = new DSHandler(mArgv[2]);
   string XSFile = config->GetCommonSetting("XSFile");
   xshelper = new XSHelper(XSFile);
-//  mWorker = new TTreeHandler();
-//  mHelpWorker = new TTreeHandler();
+  //  mWorker = new TTreeHandler();
+  //  mHelpWorker = new TTreeHandler();
   BookHists();
   InitYields();
   printf("HistsGen:: initialize:: HistGen Initialization Succeeded!\n");
@@ -34,8 +34,8 @@ bool HistsGen::initialize() {
 bool HistsGen::run() {
   std::vector<string> files = ds->Next();
   while (!files.empty()) {
-//    mWorker->SetPara("nominal", files);
-//    mHelpWorker->SetPara("sumWeights", files);
+    //    mWorker->SetPara("nominal", files);
+    //    mHelpWorker->SetPara("sumWeights", files);
     mWorker = new TTreeHandler("nominal", files);
     mHelpWorker = new TTreeHandler("sumWeights", files);
     MakeHists();
@@ -45,6 +45,7 @@ bool HistsGen::run() {
 }
 
 bool HistsGen::finalize() {
+  cout<<gDirectory->GetName()<<endl;
   FillYields();
   hs->SaveAllHists();
   hs->Close();
@@ -53,7 +54,6 @@ bool HistsGen::finalize() {
 }
 
 bool HistsGen::MakeHists() {
-  cout<<gROOT->GetListOfFiles()->GetEntries()<<endl;
   long nTotalEntries = mWorker->GetEntries();
   long messageSlice = long(nTotalEntries / 15);
   if (messageSlice == 0)
@@ -75,17 +75,15 @@ bool HistsGen::MakeHists() {
     float xs = xshelper->GetXS(to_string(mcChannel));
     float lumi = atof((config->GetCommonSetting("Luminosity")).c_str());
     norm = xs * lumi * filter_eff / totalEvents;
-        string NormFile = config->GetCommonSetting("NormFile");
-        string ShapeFile = config->GetCommonSetting("ShapeFile");
-        if (mcChannel == 410000 || mcChannel == 410009 || mcChannel == 410120
-        ||
-            mcChannel == 410121) {
-          ttbbRW = new ttbbNLO_syst("410000", NormFile, ShapeFile);
-        } else {
-          ttbbRW = new ttbbNLO_syst(to_string(mcChannel), NormFile,
-          ShapeFile);
-        }
-        ttbbRW->Init();
+    string NormFile = config->GetCommonSetting("NormFile");
+    string ShapeFile = config->GetCommonSetting("ShapeFile");
+    if (mcChannel == 410000 || mcChannel == 410009 || mcChannel == 410120 ||
+        mcChannel == 410121) {
+      ttbbRW = new ttbbNLO_syst("410000", NormFile, ShapeFile);
+    } else {
+      ttbbRW = new ttbbNLO_syst(to_string(mcChannel), NormFile, ShapeFile);
+    }
+    ttbbRW->Init();
   }
   long nentries = mWorker->GetEntries();
   for (long ientry = 0; ientry < nentries; ientry++) {
@@ -106,9 +104,9 @@ bool HistsGen::MakeHists() {
       float weight_jvt = mWorker->GetValue<float>("weight_jvt");
       float weight_leptonSF = mWorker->GetValue<float>("weight_leptonSF");
       float weight_bTagSF_77 = mWorker->GetValue<float>("weight_bTagSF_77");
-      //Weight in ntuple is not usable
-  //    float weight_ttbb_Nominal =
-  //        mWorker->GetValue<float>("weight_ttbb_Nominal");
+      // Weight in ntuple is not usable
+      //      float weight_ttbb_Nominal =
+      //          mWorker->GetValue<float>("weight_ttbb_Nominal");
       HFSystDataMembers *event = new HFSystDataMembers();
       event->HF_Classification = mWorker->GetValue<int>("HF_Classification");
       event->q1_eta = mWorker->GetValue<float>("q1_eta");
@@ -116,9 +114,10 @@ bool HistsGen::MakeHists() {
       event->qq_dr = mWorker->GetValue<float>("qq_dr");
       event->qq_pt = mWorker->GetValue<float>("qq_pt");
       event->top_pt = mWorker->GetValue<float>("truth_top_pt") * 1e-3;
-      event->ttbar_pt = mWorker->GetValue<float>("truth_ttbar_pt") *1e-3;
+      event->ttbar_pt = mWorker->GetValue<float>("truth_ttbar_pt") * 1e-3;
 
-      float weight_ttbb_Nominal = ttbbRW->GetttHFWeights(event).at("ttbb_Nominal_weight");
+      float weight_ttbb_Nominal =
+          ttbbRW->GetttHFWeights(event).at("ttbb_Nominal_weight");
 
       weights = weight_mc * weight_pileup * weight_jvt * weight_bTagSF_77 *
                 weight_leptonSF * weight_ttbb_Nominal * general_weight;
@@ -461,11 +460,10 @@ void HistsGen::BookHists() {
 void HistsGen::FillYields() {
   int nx = hs->GetHist2D("hist_raw_yields")->GetNbinsX();
   int ny = hs->GetHist2D("hist_raw_yields")->GetNbinsY();
-  cout<<"ny " <<ny<< " nx "<<nx<<endl;
-  for (int ix = 1; ix < nx+1; ix++) {
+  for (int ix = 1; ix < nx + 1; ix++) {
     string xname =
         hs->GetHist2D("hist_raw_yields")->GetXaxis()->GetBinLabel(ix);
-    for (int iy = 1; iy < ny+1; iy++) {
+    for (int iy = 1; iy < ny + 1; iy++) {
       string yname =
           hs->GetHist2D("hist_raw_yields")->GetYaxis()->GetBinLabel(iy);
       string tmpName = yname + "_" + xname;

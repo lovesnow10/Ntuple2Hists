@@ -24,6 +24,7 @@ private:
   std::map<string, TH2F *> mHist2DMap;
   TFile *mFile;
   TDirectory *mDir;
+  string mOutName;
 
 public:
   HistStore(string OutName);

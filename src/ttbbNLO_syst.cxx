@@ -135,8 +135,8 @@ void ttbbNLO_syst::Init(){
 
 
 
-  Shapesys_file = TFile::Open(weightsShapeFileName.c_str());
-  Normsys_file  = TFile::Open(weightsNormFileName.c_str());
+  Shapesys_file = TFile::Open(weightsShapeFileName.c_str(),"READONLY");
+  Normsys_file  = TFile::Open(weightsNormFileName.c_str(),"READONLY");
 
   //Nominal
   m_HistoMapForShapeRw["Nominal_ttb_tt"]  = (TH2F *) Shapesys_file->Get("rwmap_Nominal_ttb_top_pt_ttbar_pt");
