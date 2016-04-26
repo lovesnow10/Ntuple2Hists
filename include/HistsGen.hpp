@@ -34,16 +34,21 @@ private:
   XSHelper *xshelper;
   DSHandler *ds;
 
-  int mArgv;
-  char** mArgc;
+  int mArgc;
+  char** mArgv;
+
+  std::map<string, float> mRawYields;
+  std::map<string, float> mWeightedYields;
 
   //Cannot be copied
   HistsGen(HistsGen &hg);
   //functions in initialize()
   void BookHists();
+  void InitYields();
   //functions in run()
   bool MakeHists();
   //functions in finalize()
+  void FillYields();
 
 public:
   HistsGen (int argv, char** argc);

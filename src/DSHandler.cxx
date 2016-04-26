@@ -13,6 +13,8 @@ DSHandler::DSHandler(string InputTxt) {
     printf("DSHandler:: Cannot Open File %s\n", InputTxt.c_str());
     exit(-1);
   }
+  mPathsVec.clear();
+  mSampleTypesVec.clear();
   string line;
   while (getline(in, line)) {
     mPathsVec.push_back(line);
