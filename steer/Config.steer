@@ -424,3 +424,5 @@ VAR ClassifHPLUS_Dilep_INC_BDT2000_Output 20 -1 1
 COMMON Luminosity 3209.05
 COMMON OutName hist160425.root
 COMMON XSFile /Users/Shana/workarea/ATLASanalysis/XSection-MC15-13TeV-fromSusyGrp.data
+COMMON NormFile /Users/Shana/workarea/ATLASanalysis/Ntuple2Hists/data/ttbbNormRw.root
+COMMON ShapeFile /Users/Shana/workarea/ATLASanalysis/Ntuple2Hists/data/ttbbShapeRw.root

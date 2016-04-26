@@ -17,8 +17,8 @@ TTreeHandler::TTreeHandler(string treename, std::vector<string> files)
 }
 
 bool TTreeHandler::initialize() {
-  if (mTree == nullptr)
-  delete mTree;
+//  if (mTree == nullptr)
+    delete mTree;
     mTree = new TChain();
   mNFiles = mFiles.size();
   mTree->SetName(mTreeName.c_str());
@@ -31,11 +31,11 @@ bool TTreeHandler::initialize() {
 
 bool TTreeHandler::ReParseTree() {
   if (!(mTreeName == "") && !(mNFiles == 0)) {
-    mTree->Reset();
+//    mTree->Reset();
     for (auto fn : mFiles) {
       mTree->Add(fn.c_str());
     }
-    mTree->SetDirectory(0);
+//    mTree->SetDirectory(0);
     VarVec.clear();
     VarTypeMap.clear();
     TObjArray *leaves = mTree->GetListOfLeaves();

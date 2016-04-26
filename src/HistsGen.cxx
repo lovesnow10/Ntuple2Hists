@@ -1,17 +1,18 @@
 #include "HistsGen.hpp"
 #include "ttbbNLO_syst.hpp"
+#include "TROOT.h"
 
 using namespace std;
 
-HistsGen::HistsGen(int argv, char **argc) : mArgv(argv), mArgc(argc) {}
+HistsGen::HistsGen(int argc, char **argv) : mArgc(argc), mArgv(argv) {}
 
 bool HistsGen::initialize() {
-  if (mArgv < 3) {
-    printf("HistGen:: initialize:: Given args %i Are Not Enough!", mArgv);
+  if (mArgc < 3) {
+    printf("HistGen:: initialize:: Given args %i Are Not Enough!", mArgc);
     return false;
     ;
   }
-  config = new ConfigParser(mArgc[1]);
+  config = new ConfigParser(mArgv[1]);
   string OutName = config->GetCommonSetting("OutName");
   if (OutName == "") {
     printf("HistsGen:: initialize:: Using Default OutputName!\n");
@@ -19,12 +20,13 @@ bool HistsGen::initialize() {
   } else {
     hs = new HistStore(OutName);
   }
-  ds = new DSHandler(mArgc[2]);
+  ds = new DSHandler(mArgv[2]);
   string XSFile = config->GetCommonSetting("XSFile");
   xshelper = new XSHelper(XSFile);
-  mWorker = new TTreeHandler();
-  mHelpWorker = new TTreeHandler();
+//  mWorker = new TTreeHandler();
+//  mHelpWorker = new TTreeHandler();
   BookHists();
+  InitYields();
   printf("HistsGen:: initialize:: HistGen Initialization Succeeded!\n");
   return true;
 }
@@ -32,8 +34,10 @@ bool HistsGen::initialize() {
 bool HistsGen::run() {
   std::vector<string> files = ds->Next();
   while (!files.empty()) {
-    mWorker->SetPara("nominal", files);
-    mHelpWorker->SetPara("sumWeights", files);
+//    mWorker->SetPara("nominal", files);
+//    mHelpWorker->SetPara("sumWeights", files);
+    mWorker = new TTreeHandler("nominal", files);
+    mHelpWorker = new TTreeHandler("sumWeights", files);
     MakeHists();
     files = ds->Next();
   }
@@ -41,6 +45,7 @@ bool HistsGen::run() {
 }
 
 bool HistsGen::finalize() {
+  FillYields();
   hs->SaveAllHists();
   hs->Close();
   printf("HistsGen:: finalize:: HistsGen Has Finished Running!\n");
@@ -48,6 +53,7 @@ bool HistsGen::finalize() {
 }
 
 bool HistsGen::MakeHists() {
+  cout<<gROOT->GetListOfFiles()->GetEntries()<<endl;
   long nTotalEntries = mWorker->GetEntries();
   long messageSlice = long(nTotalEntries / 15);
   if (messageSlice == 0)
@@ -59,7 +65,7 @@ bool HistsGen::MakeHists() {
   float norm = 1.0;
   float general_weight = ds->GetWeight(mcChannel);
   // Seems that ttbb rw weight is already in ntuple
-  // ttbbNLO_syst *ttbbRW;
+  ttbbNLO_syst *ttbbRW;
   if (mcChannel != 0) {
     float totalEvents = mHelpWorker->GetSumUp<float>("totalEventsWeighted");
     string SampleType = ds->GetSampleType(mcChannel);
@@ -69,25 +75,27 @@ bool HistsGen::MakeHists() {
     float xs = xshelper->GetXS(to_string(mcChannel));
     float lumi = atof((config->GetCommonSetting("Luminosity")).c_str());
     norm = xs * lumi * filter_eff / totalEvents;
-    //    string NormFile = config->GetCommonSetting("NormFile");
-    //    string ShapeFile = config->GetCommonSetting("ShapeFile");
-    //    if (mcChannel == 410000 || mcChannel == 410009 || mcChannel == 410120
-    //    ||
-    //        mcChannel == 410121) {
-    //      ttbbRW = new ttbbNLO_syst("410000", NormFile, ShapeFile);
-    //    } else {
-    //      ttbbRW = new ttbbNLO_syst(to_string(mcChannel), NormFile,
-    //      ShapeFile);
-    //    }
-    //    ttbbRW->Init();
+        string NormFile = config->GetCommonSetting("NormFile");
+        string ShapeFile = config->GetCommonSetting("ShapeFile");
+        if (mcChannel == 410000 || mcChannel == 410009 || mcChannel == 410120
+        ||
+            mcChannel == 410121) {
+          ttbbRW = new ttbbNLO_syst("410000", NormFile, ShapeFile);
+        } else {
+          ttbbRW = new ttbbNLO_syst(to_string(mcChannel), NormFile,
+          ShapeFile);
+        }
+        ttbbRW->Init();
   }
-  while (mWorker->Next()) {
+  long nentries = mWorker->GetEntries();
+  for (long ientry = 0; ientry < nentries; ientry++) {
+    mWorker->GetEntry(ientry);
     long nProcessed = mWorker->GetCurrentEntry() + 1;
 
     if (nProcessed % messageSlice == 0) {
       printf(
           "HistsGen:: MakeHists:: ------Now Processed %ld of %ld in %i-----\n",
-          nProcessed, nTotalEntries, mcChannel!=0?mcChannel:runNumber);
+          nProcessed, nTotalEntries, mcChannel != 0 ? mcChannel : runNumber);
     }
     // Calculate weights (those are applied event by event)
     float weights = 1.0;
@@ -98,8 +106,19 @@ bool HistsGen::MakeHists() {
       float weight_jvt = mWorker->GetValue<float>("weight_jvt");
       float weight_leptonSF = mWorker->GetValue<float>("weight_leptonSF");
       float weight_bTagSF_77 = mWorker->GetValue<float>("weight_bTagSF_77");
-      float weight_ttbb_Nominal =
-          mWorker->GetValue<float>("weight_ttbb_Nominal");
+      //Weight in ntuple is not usable
+  //    float weight_ttbb_Nominal =
+  //        mWorker->GetValue<float>("weight_ttbb_Nominal");
+      HFSystDataMembers *event = new HFSystDataMembers();
+      event->HF_Classification = mWorker->GetValue<int>("HF_Classification");
+      event->q1_eta = mWorker->GetValue<float>("q1_eta");
+      event->q1_pt = mWorker->GetValue<float>("q1_pt");
+      event->qq_dr = mWorker->GetValue<float>("qq_dr");
+      event->qq_pt = mWorker->GetValue<float>("qq_pt");
+      event->top_pt = mWorker->GetValue<float>("truth_top_pt") * 1e-3;
+      event->ttbar_pt = mWorker->GetValue<float>("truth_ttbar_pt") *1e-3;
+
+      float weight_ttbb_Nominal = ttbbRW->GetttHFWeights(event).at("ttbb_Nominal_weight");
 
       weights = weight_mc * weight_pileup * weight_jvt * weight_bTagSF_77 *
                 weight_leptonSF * weight_ttbb_Nominal * general_weight;
@@ -319,6 +338,9 @@ bool HistsGen::MakeHists() {
       }
     }
     // loop over vars
+    string tmpName = region + "_" + sample;
+    mRawYields.at(tmpName) += 1;
+    mWeightedYields.at(tmpName) += (weights * norm);
     for (auto var : vars) {
       float value;
       if (var == "pT_jet1")
@@ -369,7 +391,50 @@ bool HistsGen::MakeHists() {
 void HistsGen::BookHists() {
   std::vector<string> regions = config->GetRegions();
   std::vector<string> samples = ds->GetAllTypes();
+  int nRegions = regions.size();
+  int nSamples = samples.size();
+  if (find(samples.begin(), samples.end(), "ttbar") == samples.end()) {
+    hs->AddHist2D("hist_raw_yields", nSamples, 0, nSamples, nRegions, 0,
+                  nRegions);
+    hs->AddHist2D("hist_weighted_yields", nSamples, 0, nSamples, nRegions, 0,
+                  nRegions);
+  } else {
+    hs->AddHist2D("hist_raw_yields", nSamples + 2, 0, nSamples + 2, nRegions, 0,
+                  nRegions);
+    hs->AddHist2D("hist_weighted_yields", nSamples + 2, 0, nSamples + 2,
+                  nRegions, 0, nRegions);
+  }
+  int nx = 1, ny = 1;
+  for (auto region : regions) {
+    hs->GetHist2D("hist_raw_yields")
+        ->GetYaxis()
+        ->SetBinLabel(ny, region.c_str());
+    hs->GetHist2D("hist_weighted_yields")
+        ->GetYaxis()
+        ->SetBinLabel(ny++, region.c_str());
+  }
   for (auto sample : samples) {
+    if (sample != "ttbar") {
+      hs->GetHist2D("hist_raw_yields")
+          ->GetXaxis()
+          ->SetBinLabel(nx, sample.c_str());
+      hs->GetHist2D("hist_weighted_yields")
+          ->GetXaxis()
+          ->SetBinLabel(nx++, sample.c_str());
+    } else {
+      hs->GetHist2D("hist_raw_yields")->GetXaxis()->SetBinLabel(nx, "ttlight");
+      hs->GetHist2D("hist_weighted_yields")
+          ->GetXaxis()
+          ->SetBinLabel(nx++, "ttlight");
+      hs->GetHist2D("hist_raw_yields")->GetXaxis()->SetBinLabel(nx, "ttcc");
+      hs->GetHist2D("hist_weighted_yields")
+          ->GetXaxis()
+          ->SetBinLabel(nx++, "ttcc");
+      hs->GetHist2D("hist_raw_yields")->GetXaxis()->SetBinLabel(nx, "ttbb");
+      hs->GetHist2D("hist_weighted_yields")
+          ->GetXaxis()
+          ->SetBinLabel(nx++, "ttbb");
+    }
     for (auto region : regions) {
       std::vector<string> vars = config->GetRegionVars(region);
       for (auto var : vars) {
@@ -388,6 +453,57 @@ void HistsGen::BookHists() {
           hs->AddHist(hname2, bins[0], bins[1], bins[2]);
           hs->AddHist(hname3, bins[0], bins[1], bins[2]);
         }
+      }
+    }
+  }
+}
+
+void HistsGen::FillYields() {
+  int nx = hs->GetHist2D("hist_raw_yields")->GetNbinsX();
+  int ny = hs->GetHist2D("hist_raw_yields")->GetNbinsY();
+  cout<<"ny " <<ny<< " nx "<<nx<<endl;
+  for (int ix = 1; ix < nx+1; ix++) {
+    string xname =
+        hs->GetHist2D("hist_raw_yields")->GetXaxis()->GetBinLabel(ix);
+    for (int iy = 1; iy < ny+1; iy++) {
+      string yname =
+          hs->GetHist2D("hist_raw_yields")->GetYaxis()->GetBinLabel(iy);
+      string tmpName = yname + "_" + xname;
+      printf("HistsGen:: FillYields:: Filling Yields %s\n", tmpName.c_str());
+      float raw, weighted;
+      if (mRawYields.find(tmpName) != mRawYields.end()) {
+        raw = mRawYields.at(tmpName);
+        weighted = mWeightedYields.at(tmpName);
+      } else {
+        printf("HistsGend:: FillYields:: Cannot Find %s\n", tmpName.c_str());
+        raw = 0;
+        weighted = 0;
+      }
+      hs->GetHist2D("hist_raw_yields")->SetBinContent(ix, iy, raw);
+      hs->GetHist2D("hist_weighted_yields")->SetBinContent(ix, iy, weighted);
+    }
+  }
+}
+
+void HistsGen::InitYields() {
+  std::vector<string> regions = config->GetRegions();
+  std::vector<string> samples = ds->GetAllTypes();
+  for (auto region : regions) {
+    for (auto sample : samples) {
+      if (sample != "ttbar") {
+        string tmpName = region + "_" + sample;
+        mRawYields[tmpName] = 0;
+        mWeightedYields[tmpName] = 0;
+      } else {
+        string tmpName1 = region + "_ttlight";
+        string tmpName2 = region + "_ttcc";
+        string tmpName3 = region + "_ttbb";
+        mRawYields[tmpName1] = 0;
+        mWeightedYields[tmpName1] = 0;
+        mRawYields[tmpName2] = 0;
+        mWeightedYields[tmpName2] = 0;
+        mRawYields[tmpName3] = 0;
+        mWeightedYields[tmpName3] = 0;
       }
     }
   }
