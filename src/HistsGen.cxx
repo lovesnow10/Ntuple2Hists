@@ -45,7 +45,6 @@ bool HistsGen::run() {
 }
 
 bool HistsGen::finalize() {
-  cout<<gDirectory->GetName()<<endl;
   FillYields();
   hs->SaveAllHists();
   hs->Close();
@@ -381,6 +380,7 @@ bool HistsGen::MakeHists() {
         }
       }
       string hname = hs->GenName(var, region, sample);
+      cout<<hname<<endl;
       hs->GetHist(hname)->Fill(value, weights * norm);
     }
   }
