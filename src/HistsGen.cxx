@@ -94,6 +94,12 @@ bool HistsGen::MakeHists() {
           "HistsGen:: MakeHists:: ------Now Processed %ld of %ld in %i-----\n",
           nProcessed, nTotalEntries, mcChannel != 0 ? mcChannel : runNumber);
     }
+    //Fake!
+    bool isFake = false;
+    string region, sample;
+    sample = ds->GetSampleType(mcChannel);
+    if (mcChannel == 0) isFake = false;
+    if (sample == "Fakes") isFake = true;
     // Calculate weights (those are applied event by event)
     float weights = 1.0;
     // No weights for DATA
@@ -134,7 +140,7 @@ bool HistsGen::MakeHists() {
     int nMu = mWorker->GetValue<int>("nMuons");
 
     // Fake lepton removal
-    if (mcChannel != 0) {
+    if (mcChannel != 0 && sample != "Fakes") {
       std::vector<int> el_true_type =
           mWorker->GetValue<std::vector<int>>("el_true_type");
       std::vector<int> el_true_origin =
@@ -161,7 +167,7 @@ bool HistsGen::MakeHists() {
         if (!(et1 == 6 && et2 == 6 &&
               (eo1 == 10 || eo1 == 12 || eo1 == 13 || eo1 == 14) &&
               (eo2 == 10 || eo2 == 12 || eo2 == 13 || eo2 == 14)))
-          continue;
+          sample = "Fakes";
       } else if (nEl == 2 && nMu == 0) {
         et1 = el_true_type.at(0);
         et2 = el_true_type.at(1);
@@ -180,7 +186,7 @@ bool HistsGen::MakeHists() {
              (et2 == 4 && eo2 == 5 &&
               (eb2 == 10 || eb2 == 12 || eb2 == 13 || eb2 == 14)));
         if (!pass)
-          continue;
+          sample = "Fakes";
       } else if (nEl == 1 && nMu == 1) {
         et1 = el_true_type.at(0);
         et2 = mu_true_type.at(0);
@@ -196,7 +202,7 @@ bool HistsGen::MakeHists() {
              (et1 == 4 && eo1 == 5 &&
               (eb1 == 10 || eb1 == 12 || eb1 == 13 || eb1 == 14)));
         if (!pass)
-          continue;
+          sample = "Fakes";
       } else {
         continue;
       }
@@ -217,8 +223,6 @@ bool HistsGen::MakeHists() {
     // Fill Hists!
     int nJets = mWorker->GetValue<int>("nJets");
     int nBTags = mWorker->GetValue<int>("nBTags");
-    string region, sample;
-    sample = ds->GetSampleType(mcChannel);
     if (sample == "ttbar") {
       int HF_Classification = mWorker->GetValue<int>("HF_Classification");
       if (HF_Classification == 0)
@@ -380,7 +384,6 @@ bool HistsGen::MakeHists() {
         }
       }
       string hname = hs->GenName(var, region, sample);
-      cout<<hname<<endl;
       hs->GetHist(hname)->Fill(value, weights * norm);
     }
   }

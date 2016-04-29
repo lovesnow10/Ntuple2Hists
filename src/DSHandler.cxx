@@ -15,6 +15,7 @@ DSHandler::DSHandler(string InputTxt) {
   }
   mPathsVec.clear();
   mSampleTypesVec.clear();
+  mSampleTypesVec.push_back("Fakes");
   string line;
   while (getline(in, line)) {
     mPathsVec.push_back(line);
@@ -54,8 +55,8 @@ string DSHandler::GetSampleType(int DSID) {
   if (DSID == 0) {
     return "DATA";
   }
-  if (DSID >= 361300 && DSID <= 361371) {
-    return "WJets";
+  if (DSID >= 361300 && DSID <= 361371) { //Wjets
+    return "Fakes";
   }
   if (DSID >= 361372 && DSID <= 361491) {
     return "ZJets";
@@ -128,6 +129,14 @@ string DSHandler::GetSampleType(int DSID) {
   }
   if (DSID == 410050 || (DSID >= 410066 && DSID <= 410116)) {
     return "Others";
+  }
+  if (DSID == 410011 || DSID == 410012 || DSID == 410025 || DSID == 410026)
+  {
+    return "Fakes"; //SingleTop
+  }
+  if (DSID == 361070 || DSID == 361081 || DSID == 361082 || DSID == 361083)
+  {
+    return "Fakes"; //Dibosons
   }
   return "Unknown";
 }
