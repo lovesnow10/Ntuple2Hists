@@ -1,5 +1,6 @@
 #include "ConfigParser.hpp"
 #include <sstream>
+#include <algorithm>
 
 ConfigParser::ConfigParser(string configfile) : mConfigFileName(configfile) {
   if (!initialize()) {

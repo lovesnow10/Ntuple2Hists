@@ -68,12 +68,12 @@ bool HistsGen::MakeHists() {
   if (mcChannel != 0) {
     float totalEvents = mHelpWorker->GetSumUp<float>("totalEventsWeighted");
     string SampleType = ds->GetSampleType(mcChannel);
-    float filter_eff = 1.0;
-    if (mcChannel >= 341541 && mcChannel <= 341558)
-      filter_eff = 0.5;
+    //float filter_eff = 1.0;
+    //if (mcChannel >= 341541 && mcChannel <= 341558)
+    //  filter_eff = 0.5;
     float xs = xshelper->GetXS(to_string(mcChannel));
     float lumi = atof((config->GetCommonSetting("Luminosity")).c_str());
-    norm = xs * lumi * filter_eff / totalEvents;
+    norm = xs * lumi / totalEvents;
     string NormFile = config->GetCommonSetting("NormFile");
     string ShapeFile = config->GetCommonSetting("ShapeFile");
     if (mcChannel == 410000 || mcChannel == 410009 || mcChannel == 410120 ||
