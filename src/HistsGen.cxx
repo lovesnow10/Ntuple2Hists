@@ -113,6 +113,7 @@ bool HistsGen::MakeHists() {
       //      float weight_ttbb_Nominal =
       //          mWorker->GetValue<float>("weight_ttbb_Nominal");
       cout<<"-------------------"<<endl;
+      cout<<nProcessed<<endl;
       cout<<"weight_mc: "<<weight_mc<<endl;
       cout<<"weight_pileup: "<<weight_pileup<<endl;
       cout<<"weight_jvt: "<<weight_jvt<<endl;
