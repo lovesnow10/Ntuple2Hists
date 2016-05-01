@@ -61,7 +61,7 @@ string DSHandler::GetSampleType(int DSID) {
   if (DSID >= 361372 && DSID <= 361491) {
     return "ZJets";
   }
-  if (DSID >= 361063 && DSID <= 361086) {
+  if (DSID >= 361063 && DSID <= 361086 && !(DSID == 361070 || DSID == 361081 || DSID == 361082 || DSID == 361083)) {
     return "Dibosons";
   }
   if (DSID == 410015 || DSID == 410016) {

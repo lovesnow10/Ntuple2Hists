@@ -124,6 +124,7 @@ bool HistsGen::MakeHists() {
       float weight_ttbb_Nominal =
           ttbbRW->GetttHFWeights(event).at("ttbb_Nominal_weight");
 
+
       weights = weight_mc * weight_pileup * weight_jvt * weight_bTagSF_77 *
                 weight_leptonSF * weight_ttbb_Nominal * general_weight;
     }
