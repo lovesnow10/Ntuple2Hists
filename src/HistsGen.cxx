@@ -112,6 +112,12 @@ bool HistsGen::MakeHists() {
       // Weight in ntuple is not usable
       //      float weight_ttbb_Nominal =
       //          mWorker->GetValue<float>("weight_ttbb_Nominal");
+      cout<<"-------------------"<<endl;
+      cout<<"weight_mc: "<<weight_mc<<endl;
+      cout<<"weight_pileup: "<<weight_pileup<<endl;
+      cout<<"weight_jvt: "<<weight_jvt<<endl;
+      cout<<"weight_leptonSF: "<<weight_leptonSF<<endl;
+      cout<<"weight_bTagSF_77: "<<weight_bTagSF_77<<endl;
       HFSystDataMembers *event = new HFSystDataMembers();
       event->HF_Classification = mWorker->GetValue<int>("HF_Classification");
       event->q1_eta = mWorker->GetValue<float>("q1_eta");
@@ -123,7 +129,9 @@ bool HistsGen::MakeHists() {
 
       float weight_ttbb_Nominal =
           ttbbRW->GetttHFWeights(event).at("ttbb_Nominal_weight");
-
+      cout<<"weight_ttbb_Nominal: "<<weight_ttbb_Nominal<<endl;
+      cout<<"Normalization: "<<norm<<endl;
+      cout<<endl;
 
       weights = weight_mc * weight_pileup * weight_jvt * weight_bTagSF_77 *
                 weight_leptonSF * weight_ttbb_Nominal * general_weight;
