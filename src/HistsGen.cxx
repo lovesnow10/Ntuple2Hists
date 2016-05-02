@@ -89,11 +89,11 @@ bool HistsGen::MakeHists() {
     mWorker->GetEntry(ientry);
     long nProcessed = mWorker->GetCurrentEntry() + 1;
 
-    if (nProcessed % messageSlice == 0) {
-      printf(
-          "HistsGen:: MakeHists:: ------Now Processed %ld of %ld in %i-----\n",
-          nProcessed, nTotalEntries, mcChannel != 0 ? mcChannel : runNumber);
-    }
+    //if (nProcessed % messageSlice == 0) {
+    //  printf(
+    //      "HistsGen:: MakeHists:: ------Now Processed %ld of %ld in %i-----\n",
+    //      nProcessed, nTotalEntries, mcChannel != 0 ? mcChannel : runNumber);
+    //}
     //Fake!
     bool isFake = false;
     string region, sample;
@@ -113,12 +113,12 @@ bool HistsGen::MakeHists() {
       //      float weight_ttbb_Nominal =
       //          mWorker->GetValue<float>("weight_ttbb_Nominal");
       cout<<"-------------------"<<endl;
-      cout<<nProcessed<<endl;
-      cout<<"weight_mc: "<<weight_mc<<endl;
-      cout<<"weight_pileup: "<<weight_pileup<<endl;
-      cout<<"weight_jvt: "<<weight_jvt<<endl;
-      cout<<"weight_leptonSF: "<<weight_leptonSF<<endl;
-      cout<<"weight_bTagSF_77: "<<weight_bTagSF_77<<endl;
+      //cout<<nProcessed<<endl;
+      //cout<<"weight_mc: "<<weight_mc<<endl;
+      //cout<<"weight_pileup: "<<weight_pileup<<endl;
+      //cout<<"weight_jvt: "<<weight_jvt<<endl;
+      //cout<<"weight_leptonSF: "<<weight_leptonSF<<endl;
+      //cout<<"weight_bTagSF_77: "<<weight_bTagSF_77<<endl;
       HFSystDataMembers *event = new HFSystDataMembers();
       event->HF_Classification = mWorker->GetValue<int>("HF_Classification");
       event->q1_eta = mWorker->GetValue<float>("q1_eta");
@@ -130,9 +130,9 @@ bool HistsGen::MakeHists() {
 
       float weight_ttbb_Nominal =
           ttbbRW->GetttHFWeights(event).at("ttbb_Nominal_weight");
-      cout<<"weight_ttbb_Nominal: "<<weight_ttbb_Nominal<<endl;
-      cout<<"Normalization: "<<norm<<endl;
-      cout<<endl;
+      //cout<<"weight_ttbb_Nominal: "<<weight_ttbb_Nominal<<endl;
+      //cout<<"Normalization: "<<norm<<endl;
+      //cout<<endl;
 
       weights = weight_mc * weight_pileup * weight_jvt * weight_bTagSF_77 *
                 weight_leptonSF * weight_ttbb_Nominal * general_weight;
@@ -395,6 +395,10 @@ bool HistsGen::MakeHists() {
       }
       string hname = hs->GenName(var, region, sample);
       hs->GetHist(hname)->Fill(value, weights * norm);
+      if (sample == "ttlight" && region == "ee2jex2bex")
+      {
+        cout<<"DSID: "<<mcChannel<<" ID: "<<nProcessed<<" weight: "<< weights * norm<<" total: "<<mWeightedYields.at("ee2jex2bex_ttlight")<<endl;
+      }
     }
   }
   return true;
