@@ -112,7 +112,7 @@ bool HistsGen::MakeHists() {
       // Weight in ntuple is not usable
       //      float weight_ttbb_Nominal =
       //          mWorker->GetValue<float>("weight_ttbb_Nominal");
-      cout<<"-------------------"<<endl;
+      //cout<<"-------------------"<<endl;
       //cout<<nProcessed<<endl;
       //cout<<"weight_mc: "<<weight_mc<<endl;
       //cout<<"weight_pileup: "<<weight_pileup<<endl;
