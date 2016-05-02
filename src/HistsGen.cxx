@@ -89,11 +89,11 @@ bool HistsGen::MakeHists() {
     mWorker->GetEntry(ientry);
     long nProcessed = mWorker->GetCurrentEntry() + 1;
 
-    //if (nProcessed % messageSlice == 0) {
-    //  printf(
-    //      "HistsGen:: MakeHists:: ------Now Processed %ld of %ld in %i-----\n",
-    //      nProcessed, nTotalEntries, mcChannel != 0 ? mcChannel : runNumber);
-    //}
+    if (nProcessed % messageSlice == 0) {
+      printf(
+          "HistsGen:: MakeHists:: ------Now Processed %ld of %ld in %i-----\n",
+          nProcessed, nTotalEntries, mcChannel != 0 ? mcChannel : runNumber);
+    }
     //Fake!
     bool isFake = false;
     string region, sample;
@@ -219,13 +219,13 @@ bool HistsGen::MakeHists() {
       // ttbar merge
       int TopHeavyFlavorFilterFlag =
           mWorker->GetValue<int>("TopHeavyFlavorFilterFlag");
-      int truth_top_dilep_filter =
-          mWorker->GetValue<int>("truth_top_dilep_filter");
+      bool truth_top_dilep_filter =
+          mWorker->GetValue<bool>("truth_top_dilep_filter");
 
       if (mcChannel == 410000 &&
-          (TopHeavyFlavorFilterFlag == 5 || truth_top_dilep_filter == 1))
+          (TopHeavyFlavorFilterFlag == 5 || truth_top_dilep_filter == true))
         continue;
-      if (mcChannel == 410120 && truth_top_dilep_filter == 1)
+      if (mcChannel == 410120 && truth_top_dilep_filter == true)
         continue;
       if (mcChannel == 410009 && TopHeavyFlavorFilterFlag == 5)
         continue;
@@ -395,10 +395,10 @@ bool HistsGen::MakeHists() {
       }
       string hname = hs->GenName(var, region, sample);
       hs->GetHist(hname)->Fill(value, weights * norm);
-      if (sample == "ttlight" && region == "ee2jex2bex")
-      {
-        cout<<"DSID: "<<mcChannel<<" ID: "<<nProcessed<<" weight: "<< weights * norm<<" total: "<<mWeightedYields.at("ee2jex2bex_ttlight")<<endl;
-      }
+      //if (sample == "ttlight" && region == "ee2jex2bex")
+      //{
+      //  cout<<"DSID: "<<mcChannel<<" ID: "<<nProcessed<<" weight: "<< weights * norm<<" total: "<<mWeightedYields.at("ee2jex2bex_ttlight")<<endl;
+      //}
     }
   }
   return true;
