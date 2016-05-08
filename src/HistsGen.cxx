@@ -68,8 +68,8 @@ bool HistsGen::MakeHists() {
   if (mcChannel != 0) {
     float totalEvents = mHelpWorker->GetSumUp<float>("totalEventsWeighted");
     string SampleType = ds->GetSampleType(mcChannel);
-    //float filter_eff = 1.0;
-    //if (mcChannel >= 341541 && mcChannel <= 341558)
+    // float filter_eff = 1.0;
+    // if (mcChannel >= 341541 && mcChannel <= 341558)
     //  filter_eff = 0.5;
     float xs = xshelper->GetXS(to_string(mcChannel));
     float lumi = atof((config->GetCommonSetting("Luminosity")).c_str());
@@ -94,12 +94,15 @@ bool HistsGen::MakeHists() {
           "HistsGen:: MakeHists:: ------Now Processed %ld of %ld in %i-----\n",
           nProcessed, nTotalEntries, mcChannel != 0 ? mcChannel : runNumber);
     }
-    //Fake!
+    // Fake!
     bool isFake = false;
-    string region, sample;
+    string sample;
+    std::vector<string> mRegions;
     sample = ds->GetSampleType(mcChannel);
-    if (mcChannel == 0) isFake = false;
-    if (sample == "Fakes") isFake = true;
+    if (mcChannel == 0)
+      isFake = false;
+    if (sample == "Fakes")
+      isFake = true;
     // Calculate weights (those are applied event by event)
     float weights = 1.0;
     // No weights for DATA
@@ -112,13 +115,13 @@ bool HistsGen::MakeHists() {
       // Weight in ntuple is not usable
       //      float weight_ttbb_Nominal =
       //          mWorker->GetValue<float>("weight_ttbb_Nominal");
-      //cout<<"-------------------"<<endl;
-      //cout<<nProcessed<<endl;
-      //cout<<"weight_mc: "<<weight_mc<<endl;
-      //cout<<"weight_pileup: "<<weight_pileup<<endl;
-      //cout<<"weight_jvt: "<<weight_jvt<<endl;
-      //cout<<"weight_leptonSF: "<<weight_leptonSF<<endl;
-      //cout<<"weight_bTagSF_77: "<<weight_bTagSF_77<<endl;
+      // cout<<"-------------------"<<endl;
+      // cout<<nProcessed<<endl;
+      // cout<<"weight_mc: "<<weight_mc<<endl;
+      // cout<<"weight_pileup: "<<weight_pileup<<endl;
+      // cout<<"weight_jvt: "<<weight_jvt<<endl;
+      // cout<<"weight_leptonSF: "<<weight_leptonSF<<endl;
+      // cout<<"weight_bTagSF_77: "<<weight_bTagSF_77<<endl;
       HFSystDataMembers *event = new HFSystDataMembers();
       event->HF_Classification = mWorker->GetValue<int>("HF_Classification");
       event->q1_eta = mWorker->GetValue<float>("q1_eta");
@@ -130,9 +133,9 @@ bool HistsGen::MakeHists() {
 
       float weight_ttbb_Nominal =
           ttbbRW->GetttHFWeights(event).at("ttbb_Nominal_weight");
-      //cout<<"weight_ttbb_Nominal: "<<weight_ttbb_Nominal<<endl;
-      //cout<<"Normalization: "<<norm<<endl;
-      //cout<<endl;
+      // cout<<"weight_ttbb_Nominal: "<<weight_ttbb_Nominal<<endl;
+      // cout<<"Normalization: "<<norm<<endl;
+      // cout<<endl;
 
       weights = weight_mc * weight_pileup * weight_jvt * weight_bTagSF_77 *
                 weight_leptonSF * weight_ttbb_Nominal * general_weight;
@@ -243,43 +246,59 @@ bool HistsGen::MakeHists() {
         sample = "ttbb";
     }
     if (nJets == 2 && nBTags == 2 && nEl == 2 && nMu == 0) {
-      region = "ee2jex2bex";
-    } else if (nJets == 2 && nBTags == 2 && nEl == 1 && nMu == 1) {
-      region = "emu2jex2bex";
-    } else if (nJets == 2 && nBTags == 2 && nEl == 0 && nMu == 2) {
-      region = "mumu2jex2bex";
-    } else if (nJets == 3 && nBTags == 2 && nEl == 2 && nMu == 0) {
-      region = "ee3jex2bex";
-    } else if (nJets == 3 && nBTags == 2 && nEl == 1 && nMu == 1) {
-      region = "emu3jex2bex";
-    } else if (nJets == 3 && nBTags == 2 && nEl == 0 && nMu == 2) {
-      region = "mumu3jex2bex";
-    } else if (nJets >= 4 && nBTags == 2 && nEl == 2 && nMu == 0) {
-      region = "ee4jin2bex";
-    } else if (nJets >= 4 && nBTags == 2 && nEl == 1 && nMu == 1) {
-      region = "emu4jin2bex";
-    } else if (nJets >= 4 && nBTags == 2 && nEl == 0 && nMu == 2) {
-      region = "mumu4jin2bex";
-    } else if (nJets >= 3 && nBTags >= 3 && nEl == 2 && nMu == 0) {
-      region = "ee3jin3bin";
-    } else if (nJets >= 3 && nBTags >= 3 && nEl == 1 && nMu == 1) {
-      region = "emu3jin3bin";
-    } else if (nJets >= 3 && nBTags >= 3 && nEl == 0 && nMu == 2) {
-      region = "mumu3jin3bin";
-    } else if (nJets >= 2 && nBTags >= 2 && nEl == 2 && nMu == 0) {
-      region = "ee2jin2bin";
-    } else if (nJets >= 2 && nBTags >= 2 && nEl == 1 && nMu == 1) {
-      region = "emu2jin2bin";
-    } else if (nJets >= 2 && nBTags >= 2 && nEl == 0 && nMu == 2) {
-      region = "mumu2jin2bin";
-    } else {
-      continue;
+      mRegions.push_back("ee2jex2bex");
     }
+    if (nJets == 2 && nBTags == 2 && nEl == 1 && nMu == 1) {
+      mRegions.push_back("emu2jex2bex");
+    }
+    if (nJets == 2 && nBTags == 2 && nEl == 0 && nMu == 2) {
+      mRegions.push_back("mumu2jex2bex");
+    }
+    if (nJets == 3 && nBTags == 2 && nEl == 2 && nMu == 0) {
+      mRegions.push_back("ee3jex2bex");
+    }
+    if (nJets == 3 && nBTags == 2 && nEl == 1 && nMu == 1) {
+      mRegions.push_back("emu3jex2bex");
+    }
+    if (nJets == 3 && nBTags == 2 && nEl == 0 && nMu == 2) {
+      mRegions.push_back("mumu3jex2bex");
+    }
+    if (nJets >= 4 && nBTags == 2 && nEl == 2 && nMu == 0) {
+      mRegions.push_back("ee4jin2bex");
+    }
+    if (nJets >= 4 && nBTags == 2 && nEl == 1 && nMu == 1) {
+      mRegions.push_back("emu4jin2bex");
+    }
+    if (nJets >= 4 && nBTags == 2 && nEl == 0 && nMu == 2) {
+      mRegions.push_back("mumu4jin2bex");
+    }
+    if (nJets >= 3 && nBTags >= 3 && nEl == 2 && nMu == 0) {
+      mRegions.push_back("ee3jin3bin");
+    }
+    if (nJets >= 3 && nBTags >= 3 && nEl == 1 && nMu == 1) {
+      mRegions.push_back("emu3jin3bin");
+    }
+    if (nJets >= 3 && nBTags >= 3 && nEl == 0 && nMu == 2) {
+      mRegions.push_back("mumu3jin3bin");
+    }
+    if (nJets >= 2 && nBTags >= 2 && nEl == 2 && nMu == 0) {
+      mRegions.push_back("ee2jin2bin");
+    }
+    if (nJets >= 2 && nBTags >= 2 && nEl == 1 && nMu == 1) {
+      mRegions.push_back("emu2jin2bin");
+    }
+    if (nJets >= 2 && nBTags >= 2 && nEl == 0 && nMu == 2) {
+      mRegions.push_back("mumu2jin2bin");
+    }
+    if (mRegions.size() == 0)
+      continue;
 
     std::vector<string> exRegion = config->GetRegions();
-    if (find(exRegion.begin(), exRegion.end(), region) == exRegion.end())
-      continue;
-    std::vector<string> vars = config->GetRegionVars(region);
+    for (auto iregion = mRegions.begin(); iregion != mRegions.end(); ++iregion) {
+      if (find(exRegion.begin(), exRegion.end(), *iregion) == exRegion.end())
+        mRegions.erase(iregion);
+    }
+    // std::vector<string> vars = config->GetRegionVars(region);
 
     // First deal with vectors stored in Ntuple
     float pT_jet1, pT_jet2, pT_bJet1, pT_lep1, pT_lep2;
@@ -350,55 +369,60 @@ bool HistsGen::MakeHists() {
       }
     }
     // loop over vars
-    string tmpName = region + "_" + sample;
-    mRawYields.at(tmpName) += 1;
-    mWeightedYields.at(tmpName) += (weights * norm);
-    for (auto var : vars) {
-      float value;
-      if (var == "pT_jet1")
-        value = pT_jet1;
-      else if (var == "pT_jet2")
-        value = pT_jet2;
-      else if (var == "eta_jet1")
-        value = eta_jet1;
-      else if (var == "eta_jet2")
-        value = eta_jet2;
-      else if (var == "phi_jet1")
-        value = phi_jet1;
-      else if (var == "phi_jet2")
-        value = phi_jet2;
-      else if (var == "pT_bJet1")
-        value = pT_bJet1;
-      else if (var == "eta_bJet1")
-        value = eta_bJet1;
-      else if (var == "phi_bJet1")
-        value = phi_bJet1;
-      else if (var == "pT_lep1")
-        value = pT_lep1;
-      else if (var == "pT_lep2")
-        value = pT_lep2;
-      else if (var == "eta_lep1")
-        value = eta_lep1;
-      else if (var == "eta_lep2")
-        value = eta_lep2;
-      else if (var == "phi_lep1")
-        value = phi_lep1;
-      else if (var == "phi_lep2")
-        value = phi_lep2;
-      else {
-        string valueType = mWorker->GetValueType(var);
-        if (valueType == "int" || valueType == "Int_t") {
-          value = mWorker->GetValue<int>(var);
-        } else {
-          value = mWorker->GetValue<float>(var);
+    for (auto region : mRegions) {
+      std::vector<string> vars = config->GetRegionVars(region);
+      string tmpName = region + "_" + sample;
+      mRawYields.at(tmpName) += 1;
+      mWeightedYields.at(tmpName) += (weights * norm);
+      for (auto var : vars) {
+        float value;
+        if (var == "pT_jet1")
+          value = pT_jet1;
+        else if (var == "pT_jet2")
+          value = pT_jet2;
+        else if (var == "eta_jet1")
+          value = eta_jet1;
+        else if (var == "eta_jet2")
+          value = eta_jet2;
+        else if (var == "phi_jet1")
+          value = phi_jet1;
+        else if (var == "phi_jet2")
+          value = phi_jet2;
+        else if (var == "pT_bJet1")
+          value = pT_bJet1;
+        else if (var == "eta_bJet1")
+          value = eta_bJet1;
+        else if (var == "phi_bJet1")
+          value = phi_bJet1;
+        else if (var == "pT_lep1")
+          value = pT_lep1;
+        else if (var == "pT_lep2")
+          value = pT_lep2;
+        else if (var == "eta_lep1")
+          value = eta_lep1;
+        else if (var == "eta_lep2")
+          value = eta_lep2;
+        else if (var == "phi_lep1")
+          value = phi_lep1;
+        else if (var == "phi_lep2")
+          value = phi_lep2;
+        else {
+          string valueType = mWorker->GetValueType(var);
+          if (valueType == "int" || valueType == "Int_t") {
+            value = mWorker->GetValue<int>(var);
+          } else {
+            value = mWorker->GetValue<float>(var);
+          }
         }
+        string hname = hs->GenName(var, region, sample);
+        hs->GetHist(hname)->Fill(value, weights * norm);
+        // if (sample == "ttlight" && region == "ee2jex2bex")
+        //{
+        //  cout<<"DSID: "<<mcChannel<<" ID: "<<nProcessed<<" weight: "<<
+        //  weights * norm<<" total:
+        //  "<<mWeightedYields.at("ee2jex2bex_ttlight")<<endl;
+        //}
       }
-      string hname = hs->GenName(var, region, sample);
-      hs->GetHist(hname)->Fill(value, weights * norm);
-      //if (sample == "ttlight" && region == "ee2jex2bex")
-      //{
-      //  cout<<"DSID: "<<mcChannel<<" ID: "<<nProcessed<<" weight: "<< weights * norm<<" total: "<<mWeightedYields.at("ee2jex2bex_ttlight")<<endl;
-      //}
     }
   }
   return true;
